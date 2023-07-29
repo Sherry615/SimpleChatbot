@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>CHAT-BOT</title>
+
+	<!-- for mobile screens -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- stylesheets are conveniently separated into components -->
+	<link rel="stylesheet" media="all" href="/SimpleChatbot/myNewChatBot/component/styles/setup.css">
+	<link rel="stylesheet" media="all" href="/SimpleChatbot/myNewChatBot/component/styles/says.css">
+	<link rel="stylesheet" media="all" href="/SimpleChatbot/myNewChatBot/component/styles/reply.css">
+	<link rel="stylesheet" media="all" href="/SimpleChatbot/myNewChatBot/component/styles/typing.css">
+	<link rel="stylesheet" media="all" href="/SimpleChatbot/myNewChatBot/component/styles/input.css">
+	<style>
+	body {
+		background: #dcdde0;
+	}
+	.bubble-container {
+		height: 100vh;
+	}
+	.bubble-container .input-wrap textarea {
+		margin: 0;
+		width: calc(100% - 30px);
+	}
+	</style>
+</head>
+<body>
+
+<!-- container element for chat window -->
+<div id="chat"></div>
+
+<!-- import the JavaScript file -->
+<script src="../component/Bubbles.js"></script>
+<script>
+// initialize by constructing a named function...
+// ...and add text processing plugin:
+var chatWindow = new Bubbles(document.getElementById("chat"), "chatWindow", {
+  // the one that we care about is inputCallbackFn()
+  // this function returns an object with some data that we can process from user input
+  // and understand the context of it
+
+  // this is an example function that matches the text user typed to one of the answer bubbles
+  // this function does no natural language processing
+  // this is where you may want to connect this script to NLC backend.
+  inputCallbackFn: function(o) {
+    // add error conversation block & recall it if no answer matched
+    var miss = function() {
+      chatWindow.talk(
+        {
+          "i-dont-get-it": {
+            says: [
+              "Sorry, I don't get it 😕. Pls repeat? Or you can just click below 👇"
+            ],
+            reply: o.convo[o.standingAnswer].reply
+          }
+        },
+        "i-dont-get-it"
+      )
+    }
+
+    // do this if answer found
+    var match = function(key) {
+      setTimeout(function() {
+        chatWindow.talk(convo, key) // restart current convo from point found in the answer
+      }, 600)
+    }
+
+    // sanitize text for search function
+    var strip = function(text) {
+      return text.toLowerCase().replace(/[\s.,\/#!$%\^&\*;:{}=\-_'"`~()]/g, "")
+    }
+
+    // search function
+    var found = false
+    o.convo[o.standingAnswer].reply.forEach(function(e, i) {
+      strip(e.question).includes(strip(o.input)) && o.input.length > 0
+        ? (found = e.answer)
+        : found ? null : (found = false)
+    })
+    found ? match(found) : miss()
+  }
+}) // done setting up chat-bubble
+
+// conversation object defined separately, but just the same as in the
+// "Basic chat-bubble Example" (1-basics.html)
+var convo = {
+
+  ice: {
+    says: ["Hi", "How may I help you? Symptom check or About doc.time?"],
+    reply: [
+      {
+        question: "Start my symptom check",
+        answer: "banana"
+      },
+      {
+        question: "About doc.time",
+        answer: "ice-cream"
+      }
+    ]
+  },
+
+  banana: {
+    says: ["Select age group"],
+    reply: [
+      {
+        question: "50>",
+        answer: "gender"
+      },
+      {
+        question: "40-50",
+        answer: "gender"
+      },
+      {
+        question: "< 10",
+        answer: "ice"
+      },
+      {
+        question: "10-20",
+        answer: "gender"
+      },
+      {
+        question: "20-30",
+        answer: "gender"
+      },
+      {
+        question: "30-40",
+        answer: "gender"
+      },
+      
+      
+    ]
+  },
+
+  gender: {
+    says: ["Select your gender"],
+    reply: [
+      {
+        question: "Male",
+        answer: "predict"
+      },
+      {
+        question: "Female",
+        answer: "predict"
+      },
+      {
+        question: "Other",
+        answer: "predict"
+      }
+    ]
+  },
+
+  predict: {
+    says: ["Select your cause"],
+    reply: [
+      {
+        question: "Stomach pain",
+        answer: "stomq1"
+      },
+      {
+        question: "Ankle problem",
+        answer: "ankleq1"
+      },
+      {
+        question: "Chest pain",
+        answer: "chestq1"
+      },
+      {
+        question: "Cold and Flu",
+        answer: "coldq1"
+      },
+      {
+        question: "Cough",
+        answer: "coughq1"
+      },
+      {
+        question: "Diarrhoea",
+        answer: "diarq1"
+      },
+      {
+        question: "Eye problem",
+        answer: "eyeq1"
+      },
+      {
+        question: "Hair loss",
+        answer: "hairq1"
+      },
+      {
+        question: "Knee problem",
+        answer: "kneeq1"
+      },
+      {
+        question: "Lower back problem",
+        answer: "lbackq1"
+      },
+      {
+        question: "Shortness of breath",
+        answer: "shortq1"
+      },
+      {
+        question: "Fever",
+        answer: "feverq1"
+      }
+    ]
+  },
+
+
+  "ankleq1": {
+    says: ["Is the ankle significantly swollen, and is the pain so intense that you can’t put weight on that foot?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "anklea1"
+      },
+      {
+        question: "No",
+        answer: "ankleq2"
+      }
+    ]
+  },
+  "ankleq2": {
+    says: ["Is the ankle swollen and bruised, and can you still put weight on that foot?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "anklea2"
+      },
+      {
+        question: "No",
+        answer: "ankleq3"
+      }
+    ]
+  },
+  "ankleq3": {
+    says: ["Do you have a fever, and is one or more of your joints painful, swollen, and red?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "anklea3"
+      },
+      {
+        question: "No",
+        answer: "defaultanswer"
+      }
+    ]
+  },
+  "anklea1": {
+    says: ["You may have a FRACTURE or a severe SPRAIN."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "anklea2": {
+    says: ["You may have a SPRAINED ANKLE or a FRACTURE OF THE FIBULA."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "anklea3": {
+    says: ["Fever and a painful, red, swollen joint may be caused by an INFECTED JOINT (also called SEPTIC ARTHRITIS). More than one affected joint may be caused by RHEUMATIC FEVER."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  
+  "stomq1": {
+    says: ["Do you have a sudden sharp pain that starts in the back near the ribs and moves down toward the groin?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "stoma1"
+      },
+      {
+        question: "No",
+        answer: "stomq2"
+      }
+    ]
+  },
+  "stomq2": {
+    says: ["Is your pain in the lower right abdomen, and do you have blood or mucus in your stools?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "stoma2"
+      },
+      {
+        question: "No",
+        answer: "stomq3"
+      }
+    ]
+  },
+  "stomq3": {
+    says: ["Do you have watery diarrhea, fever, muscle aches, chills, nausea, or vomiting?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "stoma3"
+      },
+      {
+        question: "No",
+        answer: "defaultanswer"
+      }
+    ]
+  },
+  "stoma1": {
+    says: ["Your pain may be from a KIDNEY STONE or KIDNEY TUMOR. If you have a fever, you may have a KIDNEY or BLADDER INFECTION."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "stoma2": {
+    says: ["These may be signs of ULCERATIVE COLITIS or CROHN’S DISEASE. These are inflammatory diseases of the colon or large intestine."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "stoma3": {
+    says: ["You may have GASTROENTERITIS, commonly called the stomach flu. Severe cases of gastroenteritis can lead to dehydration in infants and young children."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+
+  "lbackq1": {
+    says: ["Do you have numbness, burning, or electrical pain extending down the side of back of your leg?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "lbacka1"
+      },
+      {
+        question: "No",
+        answer: "lbackq2"
+      }
+    ]
+  },
+  "lbackq2": {
+    says: ["Do you have pain when twisting, bending, or even sitting?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "lbacka2"
+      },
+      {
+        question: "No",
+        answer: "lbackq3"
+      }
+    ]
+  },
+  "lbackq3": {
+    says: ["Is your back stiff and sore in the morning and are other joints stiff, sore, swollen, or red?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "lbacka3"
+      },
+      {
+        question: "No",
+        answer: "defaultanswer"
+      }
+    ]
+  },
+  "lbacka1": {
+    says: ["You may have a HERNIATED DISC. You may also have SCIATICA, caused by irritation of the sciatic nerve."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "lbacka2": {
+    says: ["Your pain may be from MUSCLE SPASM (this can often feel like your back is “locked up”), a PULLED MUSCLE, or a HERNIATED DISC."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "lbacka3": {
+    says: ["You may have ANKYLOSING SPONDYLITIS, a form of arthritis that affects the spine. Other forms of ARTHRITIS can also cause back pain and stiffness."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+
+
+  "kneeq1": {
+    says: ["Is your knee deformed?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "kneea1"
+      },
+      {
+        question: "No",
+        answer: "kneeq2"
+      }
+    ]
+  },
+  "kneeq2": {
+    says: ["Is your kneecap swollen, tender, and warm, and do you have pain with activity?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "kneea2"
+      },
+      {
+        question: "No",
+        answer: "kneeq3"
+      }
+    ]
+  },
+  "kneeq3": {
+    says: ["Is your knee tender and swollen, and does the pain get worse after sitting for a long time or after using the stairs?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "kneea3"
+      },
+      {
+        question: "No",
+        answer: "defaultanswer"
+      }
+    ]
+  },
+  "kneea1": {
+    says: ["Your knee may be FRACTURED and/or you may have seriously TORN some LIGAMENTS (tissue connecting bones to each other) in the internal part of the knee."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "kneea2": {
+    says: ["If you fell hard on your kneecap/patella it may be FRACTURED. Otherwise, it may be bruised or you may have PREPATELLAR BURSITIS, an irritation of a small lubricating sac (called bursa) in front of the kneecap."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "kneea3": {
+    says: ["Your symptoms may be from TORN CARTILAGE/MENISCUS, a TORN LIGAMENT (tissue connecting bones to each other), or CHONDROMALACIA PATELLAE, the softening of the ligament or cartilage underneath the kneecap."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+
+
+  "hairq1": {
+    says: ["Are these patches red, itchy, or oily?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "haira1"
+      },
+      {
+        question: "No",
+        answer: "hairq2"
+      }
+    ]
+  },
+  "hairq2": {
+    says: ["Have you used any chemicals on your hair, or have you worn tight braids or cornrows recently?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "haira2"
+      },
+      {
+        question: "No",
+        answer: "hairq3"
+      }
+    ]
+  },
+  "hairq3": {
+    says: ["Do you have a completely smooth patch where you lost hair with no broken or smaller hairs noted in the area?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "haira3"
+      },
+      {
+        question: "No",
+        answer: "defaultanswer"
+      }
+    ]
+  },
+  "haira1": {
+    says: ["This type of hair loss can be caused by SEBORRHEA, LICHEN PLANUS, or RINGWORM."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "haira2": {
+    says: ["Your hair loss may be from FOLLICULAR DAMAGE (traction on the roots of the hair lead to hair loss)."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "haira3": {
+    says: ["This is known as ALOPECIA AREATA."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+
+
+  "eyeq1": {
+    says: ["Is your eye red, and do you have severe eye pain, or has your vision suddenly decreased or become cloudy?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "eyea1"
+      },
+      {
+        question: "No",
+        answer: "eyeq2"
+      }
+    ]
+  },
+  "eyeq2": {
+    says: ["Are you experiencing flu-like symptoms, such as fever, fatigue, muscle aches, and pain in one or both temples?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "eyea2"
+      },
+      {
+        question: "No",
+        answer: "eyeq3"
+      }
+    ]
+  },
+  "eyeq3": {
+    says: ["Do you have diabetes, and have you noticed any changes in your vision?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "eyea3"
+      },
+      {
+        question: "No",
+        answer: "defaultanswer"
+      }
+    ]
+  },
+  "eyea1": {
+    says: ["Your symptoms may be from ACUTE GLAUCOMA, a condition caused by a rise in eye pressure that can cause permanent vision damage or blindness."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "eyea2": {
+    says: ["Your symptoms may be a sign of a serious inflammatory condition called TEMPORAL ARTERITIS."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "eyea3": {
+    says: ["Over time, too much glucose (sugar) in the blood can cause eye problems and damage."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+
+  "diarq1": {
+    says: ["Are you also nauseated or vomiting?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "diara1"
+      },
+      {
+        question: "No",
+        answer: "diarq2"
+      }
+    ]
+  },
+  "diarq2": {
+    says: ["Have you traveled recently to another country?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "diara2"
+      },
+      {
+        question: "No",
+        answer: "diarq3"
+      }
+    ]
+  },
+  "diarq3": {
+    says: ["Are you bloated, and are you experiencing severe lower abdominal pain or cramping?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "diara3"
+      },
+      {
+        question: "No",
+        answer: "defaultanswer"
+      }
+    ]
+  },
+  "diara1": {
+    says: ["Your diarrhea may be a side effect or adverse reaction caused by the medicine."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "diara2": {
+    says: ["You may have TRAVELER’S DIARRHEA, which is caused by contaminated food or drink."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "diara3": {
+    says: ["These could be symptoms of a problem such as an INTESTINAL OBSTRUCTION or blockage."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+
+
+  "coughq1": {
+    says: ["Are you very short of breath, and are you coughing up pink, frothy mucus?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "cougha1"
+      },
+      {
+        question: "No",
+        answer: "coughq2"
+      }
+    ]
+  },
+  "coughq2": {
+    says: ["Does your cough produce clear or pale yellow mucus?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "cougha2"
+      },
+      {
+        question: "No",
+        answer: "coughq3"
+      }
+    ]
+  },
+  "coughq3": {
+    says: ["Does the cough come with shortness of breath and wheezing?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "cougha3"
+      },
+      {
+        question: "No",
+        answer: "defaultanswer"
+      }
+    ]
+  },
+  "cougha1": {
+    says: ["Your symptoms may be from a serious condition called PULMONARY EDEMA (fluid in the lungs)."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "cougha2": {
+    says: ["You likely have a viral infection, which includes the FLU."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "cougha3": {
+    says: ["These symptoms may be a sign of ASTHMA, a closure or restriction of the airways."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  
+
+  "coldq1": {
+    says: ["Do you have a sore throat and headache without nasal drainage or a cough?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "colda1"
+      },
+      {
+        question: "No",
+        answer: "coldq2"
+      }
+    ]
+  },
+  "coldq2": {
+    says: ["Do you have a headache or muscle aches, nausea or vomiting, and watery diarrhea?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "colda2"
+      },
+      {
+        question: "No",
+        answer: "coldq3"
+      }
+    ]
+  },
+  "coldq3": {
+    says: ["Are you experiencing sneezing, a sore throat with a cough, a headache, congestion, and a runny nose?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "colda3"
+      },
+      {
+        question: "No",
+        answer: "defaultanswer"
+      }
+    ]
+  },
+  "colda1": {
+    says: ["You may have STREP THROAT, an infection caused by bacteria."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "colda2": {
+    says: ["You may have viral GASTROENTERITIS. Many people call it the STOMACH FLU, but it is not the same as influenza."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "colda3": {
+    says: ["You probably have a viral infection, commonly called a COLD."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  
+
+  "chestq1": {
+    says: ["Do you have severe chest pain?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "chesta1"
+      },
+      {
+        question: "No",
+        answer: "chestq2"
+      }
+    ]
+  },
+  "chestq2": {
+    says: ["Are you uncomfortable from your shortness of breath?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "chesta2"
+      },
+      {
+        question: "No",
+        answer: "chestq2"
+      }
+    ]
+  },
+  "chestq3": {
+    says: ["Do you have a painful, blistering rash on your chest or back?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "chesta3"
+      },
+      {
+        question: "No",
+        answer: "defaultanswer"
+      }
+    ]
+  },
+  "chesta1": {
+    says: ["These could be symptoms of HYPERVENTILATION, an episode of overbreathing often caused by stress or anxiety. It can also be caused by increased breathing when your body is not getting enough oxygen and you begin to breathe faster."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "chesta2": {
+    says: ["Your pain may be from a HEART ATTACK or MYOCARDIAL INFARCTION. Similar to men, chest pain is the most common HEART ATTACK symptom in women. However, women are more likely than men to experience the following symptoms (with or without chest pain) when having a heart attack: abdominal pain, feeling lightheaded or dizzy, back or jaw pain, and unexplained fatigue."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "chesta3": {
+    says: ["You may have a viral infection of the nerves and skin called SHINGLES, caused by the varicella zoster virus. This can often occur even if you have received the SHINGLES vaccine."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+
+  "shortq1": {
+    says: ["Do you have sudden, severe shortness of breath and chest pain or tightness?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "shorta1"
+      },
+      {
+        question: "No",
+        answer: "shortq2"
+      }
+    ]
+  },
+  "shorta1": {
+    says: ["You may be having a HEART ATTACK, or you may have a PNEUMOTHORAX, a condition in which air gets between the lungs and the chest wall, or a PULMONARY EMBOLISM, in which a blood clot may have moved from a leg to the lungs."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "shortq2": {
+    says: ["Do you have a fever and a painful cough with blood in the mucus?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "shorta2"
+      },
+      {
+        question: "No",
+        answer: "shortq3"
+      }
+    ]
+  },
+  "shortq3": {
+    says: ["Do you have a fever, dry cough and chest pain and are you losing weight?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "shorta3"
+      },
+      {
+        question: "No",
+        answer: "defaultanswer"
+      }
+    ]
+  },
+  "shorta2": {
+    says: ["You may have an INFECTION, such as PNEUMONIA or a more serious problem, such as LUNG CANCER or PULMONARY EMBOLISM."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "shorta3": {
+    says: ["You may have HISTOPLASMOSIS, an INFECTION caused by a FUNGUS."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+
+  "feverq1": {
+    says: ["Does your fever come and go and does your temperature stay between 97° and 102°F?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "fevera1"
+      },
+      {
+        question: "No",
+        answer: "feverq2"
+      }
+    ]
+  },
+  "fevera1": {
+    says: ["You may have MONONUCLEOSIS (also known as MONO), which is a viral infection that can lead to swollen glands in your neck and a swollen/tender spleen (an organ in your abdomen)."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "feverq2": {
+    says: ["Have you had a fever for weeks, along with tiredness and a sore throat?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "fevera1"
+      },
+      {
+        question: "No",
+        answer: "feverq3"
+      }
+    ]
+  },
+  "feverq3": {
+    says: ["Do you have an earache?"],
+    reply: [
+      {
+        question: "Yes",
+        answer: "fevera2"
+      },
+      {
+        question: "No",
+        answer: "defaultanswer"
+      }
+    ]
+  },
+  "fevera2": {
+    says: ["You may have a middle ear infection (OTITIS MEDIA) or an outer ear infection (SWIMMER’S EAR or OTITIS EXTERNA)."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+  "defaultanswer": {
+    says: ["You are fit and fine just rest good enough."],
+    reply: [
+      {
+        question: "Thanks",
+        answer: "bye"
+      },
+      {
+        question: "Start Again",
+        answer: "ice"
+      }
+    ]
+  },
+
+  "ice-cream": {
+    says: ["Hi I'm doc.time chatbot.", "I was created using Dialogflow and google API.","I will guide you about this application in detail.","This app was created with Flutter SDE and Dart programming language.","Welcome to doctime! This is an application is useful for both doctors as well as patients.","It helps you to predict diseases.","Also helps every patient maintain a record"],
+    reply: [
+      {
+        question: "Start Over",
+        answer: "ice"
+      }
+    ]
+  },
+  "bye": {
+    says: ["Your most welcome!Have a nice day."],
+    reply: [
+      {
+        question: "Start Over",
+        answer: "ice"
+      }
+    ]
+  }
+}
+
+// pass JSON to your function and you're done!
+chatWindow.talk(convo)
+</script>
+</body>
